@@ -7,6 +7,7 @@ A portable, model-agnostic reference architecture for preserving AI context, tra
 ## Start here
 
 - [Architecture](docs/architecture.md)
+- [Context model reference](docs/context-model.md)
 - [Context record schema](schemas/context-record.schema.json)
 - [Synthetic JSONL example](examples/context-records.jsonl)
 - [Export prompt for the source AI](templates/export-context-prompt.md)
