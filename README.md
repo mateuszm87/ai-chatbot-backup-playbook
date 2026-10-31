@@ -1,114 +1,62 @@
 # AI Chatbot Backup Playbook
 
-A practical guide for preparing AI chatbots and LLM-powered applications for resilience, continuity, and safe recovery.
+A portable, model-agnostic reference architecture for preserving AI context, transferring it between assistants, and recovering from context loss. This repository includes a reusable context data model, import/export prompts, JSON Schemas, synthetic examples, and local validation tools.
 
-## Purpose
+> **Status:** architecture starter kit / manual-sync MVP. This is not a live integration with ChatGPT, Microsoft Copilot, or any provider. It does not automatically export chat histories or guarantee that an assistant will retain imported fields.
 
-This project documents how to prepare an AI system to survive model failures, context loss, API outages, degraded runtime conditions, and user-facing interruptions without losing trust, continuity, or operational safety.
+## Start here
 
-## Why this matters
+- [Architecture](docs/architecture.md)
+- [Context record schema](schemas/context-record.schema.json)
+- [Synthetic JSONL example](examples/context-records.jsonl)
+- [Export prompt for the source AI](templates/export-context-prompt.md)
+- [Import prompt for the target AI](templates/import-context-prompt.md)
+- [Manual sync runbook](docs/manual-sync-workflow.md)
+- [Security and privacy](docs/security.md)
+- [Recovery runbook](docs/recovery.md)
+- [Implementation status and limitations](docs/implementation-status.md)
 
-AI chatbots and LLM-powered assistants increasingly support customer service, internal productivity, workflow automation, and decision support. Their value depends not only on quality of answers, but also on reliability, continuity, and safe recovery.
+## Quick start
 
-A chatbot can fail in several ways:
+1. Clone or download this repository.
+2. Read the architecture and confirm what data you are permitted to transfer.
+3. Use the export prompt in the source assistant with a narrow topic scope.
+4. Save the result as UTF-8 JSON Lines (one JSON object per line).
+5. Review records for accuracy, freshness, sensitivity, secrets, and employer restrictions.
+6. Validate the file:
 
-- the model provider becomes unavailable
-- the runtime environment crashes
-- the conversation context is lost
-- the system produces low-quality or unsafe outputs
-- a workflow acts on stale or hallucinated data
-- tools or APIs fail mid-task
+   ~~~bash
+   python scripts/validate_bundle.py examples/context-records.jsonl
+   ~~~
 
-Without a backup strategy, these issues can create user frustration, lost work, broken automation, or operational risk.
+7. For your own local bundle, create a SHA-256 inventory:
 
-## Goals
+   ~~~bash
+   python scripts/build_manifest.py ./my-context-bundle ./MANIFEST_SHA256.json
+   ~~~
 
-- Preserve conversation context and user state
-- Support failover to backup models or safer alternatives
-- Prevent irreversible data loss
-- Create documented recovery procedures
-- Reduce operational and safety risk
-- Keep a human override path for critical tasks
+8. Import only reviewed records using the target import prompt.
+9. Store an encrypted offline copy and periodically test restoration.
 
-## Scope
+## Layout
 
-This playbook is intended for:
+- docs/ — architecture, manual workflow, security, recovery, status
+- schemas/ — portable context record and manifest schemas
+- templates/ — export/import prompts and record template
+- examples/ — synthetic records only; no real personal or work data
+- scripts/ — Python standard-library validation and hash inventory tools
 
-- AI chatbots
-- LLM-powered assistants
-- internal copilots
-- automation workflows using language models
-- teams operating critical AI features
+## Design principles
 
-## Core principles
+- Provider-neutral records, independent of hidden model memory.
+- Separate facts, preferences, decisions, projects, procedures, and open questions.
+- Preserve provenance, confidence, timestamps, and sensitivity.
+- Treat imported content as untrusted until reviewed.
+- Keep work and personal data separate; employer policy takes precedence.
+- Maintain version history and an encrypted offline copy independent of GitHub.
 
-1. Treat memory and session state as operational data.
-2. Store prompts, outputs, and decisions in durable storage.
-3. Keep a fallback model or safe alternative route ready.
-4. Take checkpoints before significant actions or state changes.
-5. Validate recovery procedures regularly.
-6. Maintain human oversight for high-risk workflows.
+## Limitations and safety
 
-## Recommended operating model
+This is a manual export/import workflow, not a bidirectional sync engine. A hash manifest detects file changes only if the expected manifest is trusted; it does not encrypt data or prove that the source is truthful. Do not commit real private context, secrets, private chat exports, or employer-confidential data to this public repository. Schema-valid data can still be false, stale, sensitive, or irrelevant. Human review is required.
 
-- Primary model handles normal operations.
-- Backup model or alternative flow is available when the primary fails.
-- Session state is persisted in durable storage.
-- Checkpoints are maintained before high-impact changes.
-- Recovery is tested before production use.
-- Critical actions require human review.
-
-## Repository structure
-
-- `docs/` — conceptual and operational guidance
-- `checklists/` — pre-launch and recovery readiness checks
-- `templates/` — reusable runbooks and reports
-- `examples/` — sample configs and workflows
-- `policies/` — formal backup and failover policies
-- `scripts/` — practical automation helpers
-
-## Key documents
-
-- `docs/00-introduction.md`
-- `docs/01-why-backup-matters.md`
-- `docs/02-core-principles.md`
-- `docs/03-architecture-and-risk-model.md`
-- `docs/05-fallback-models-and-recovery.md`
-- `docs/09-runbook.md`
-
-## Backup and resilience checklist
-
-Before a chatbot goes live, make sure the following are in place:
-
-- durable session state is enabled
-- conversation checkpoints are created
-- fallback model or safe alternative flow is defined
-- logging and observability are active
-- recovery steps are documented
-- human approval is required for critical actions
-- sensitive actions are scoped and constrained
-- safety checks are in place
-- error handling is defined for upstream outages
-
-## Failure handling strategy
-
-A resilient AI system should be designed with explicit control points:
-
-- store state outside the model runtime
-- keep fallback models or policies predefined
-- route to a safe degraded mode during failures
-- restore the last valid checkpoint when possible
-- preserve logs for post-incident analysis
-- require review before high-impact actions resume
-
-## Contributing
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
-
-## License
-
-This project is provided for general operational guidance and documentation. Please review and adapt policies to fit your specific security, legal, and compliance requirements.
-
-## Project status
-
-This repository is intended as a practical playbook for AI backup, failover, and continuity planning. It can evolve with new operational patterns, examples, and team-specific guidance.
+See [LICENSE](LICENSE).
